@@ -26,7 +26,8 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-
+    //MainComponent& pMainComponent;
+    juce::Slider slider1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -1,106 +1,122 @@
 #include "MainComponent.h"
 
+
 //==============================================================================
 MainComponent::MainComponent()
 {
-    // Make sure you set the size of the component after
-    // you add any child components.
-    setSize (800, 600);
+	// Make sure you set the size of the component after
+	// you add any child components.
+	int winWidth = 800;
+	int winHeight = 600;
+	setSize(winWidth, winHeight);
 
-    // Some platforms require permissions to open input channels so request that here
-    if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
-        && ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
-    {
-        juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
-                                           [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
-    }
-    else
-    {
-        // Specify the number of input and output channels that we want to open
-        setAudioChannels (2, 2);
-    }
+	slider1.setSliderStyle(juce::Slider::LinearVertical);
+	slider1.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+	slider1.setRange(-126.0, 0.0, 0.05);
+	slider1.setPopupDisplayEnabled(true, false, this);
+	slider1.setTextValueSuffix(" dB");
+	slider1.setValue(1.0);
+	addAndMakeVisible(&slider1);
+	//auto slider2 = Slider(Slider::LinearBarVertical, Slider::TextBoxBelow);
+
+
+
+	// Some platforms require permissions to open input channels so request that here
+	if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
+		&& ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
+	{
+		juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
+										   [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
+	}
+	else
+	{
+		// Specify the number of input and output channels that we want to open
+		setAudioChannels (16, 2);
+	}
 }
 
 MainComponent::~MainComponent()
 {
-    // This shuts down the audio device and clears the audio source.
-    shutdownAudio();
+	// This shuts down the audio device and clears the audio source.
+	shutdownAudio();
 }
 
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-    // This function will be called when the audio device is started, or when
-    // its settings (i.e. sample rate, block size, etc) are changed.
+	// This function will be called when the audio device is started, or when
+	// its settings (i.e. sample rate, block size, etc) are changed.
 
-    // You can use this function to initialise any resources you might need,
-    // but be careful - it will be called on the audio thread, not the GUI thread.
+	// You can use this function to initialise any resources you might need,
+	// but be careful - it will be called on the audio thread, not the GUI thread.
 
-    // For more details, see the help for AudioProcessor::prepareToPlay()
+	// For more details, see the help for AudioProcessor::prepareToPlay()
 }
 
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    // Your audio-processing code goes here!
+	// Your audio-processing code goes here!
 
-    // For more details, see the help for AudioProcessor::getNextAudioBlock()
+	// For more details, see the help for AudioProcessor::getNextAudioBlock()
 
-    // Right now we are not producing any data, in which case we need to clear the buffer
-    // (to prevent the output of random noise)
-    
+	// Right now we are not producing any data, in which case we need to clear the buffer
+	// (to prevent the output of random noise)
+	
 
-    auto* device = deviceManager.getCurrentAudioDevice();
-    auto activeInChnnls = device->getActiveInputChannels();
-    auto activeOutChnnls = device->getActiveOutputChannels();
-    auto maxInChnnls = activeInChnnls.getHighestBit() + 1;
-    auto maxOutChnnls = activeOutChnnls.getHighestBit() + 1;
+	auto* device = deviceManager.getCurrentAudioDevice();
+	auto activeInChnnls = device->getActiveInputChannels();
+	auto activeOutChnnls = device->getActiveOutputChannels();
+	auto maxInChnnls = activeInChnnls.getHighestBit() + 1;
+	auto maxOutChnnls = activeOutChnnls.getHighestBit() + 1;
 
-    for (auto channel = 0; channel < maxOutChnnls; ++channel)
-    {
-        if ((!activeOutChnnls[channel]) || maxInChnnls == 0)
-        {
-            bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
-        }
-        else
-        {
-            auto actualInputChannel = channel % maxInChnnls; // Repeat input channels if more out than in
-            if (!activeInChnnls[channel])
-            {
-                bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
-            }
-            else
-            {
-                auto* inputBuffer = bufferToFill.buffer->getReadPointer(actualInputChannel, bufferToFill.startSample);
-                auto* outputBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-                for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
-                {
-                    outputBuffer[sample] = inputBuffer[sample]; // More Adjustments will be done later
-                }
-            }
-        }
-    }
+	for (auto channel = 0; channel < maxOutChnnls; ++channel)
+	{
+		if ((!activeOutChnnls[channel]) || maxInChnnls == 0)
+		{
+			bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
+		}
+		else
+		{
+			auto actualInputChannel = channel % maxInChnnls; // Repeat input channels if more out than in
+			if (!activeInChnnls[channel])
+			{
+				bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
+			}
+			else
+			{
+				auto* inputBuffer = bufferToFill.buffer->getReadPointer(actualInputChannel, bufferToFill.startSample);
+				auto* outputBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+				for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
+				{
+					outputBuffer[sample] = inputBuffer[sample]; // More Adjustments will be done later
+				}
+			}
+		}
+	}
 }
 
 void MainComponent::releaseResources()
 {
-    // This will be called when the audio device stops, or when it is being
-    // restarted due to a setting change.
+	// This will be called when the audio device stops, or when it is being
+	// restarted due to a setting change.
 
-    // For more details, see the help for AudioProcessor::releaseResources()
+	// For more details, see the help for AudioProcessor::releaseResources()
 }
 
 //==============================================================================
 void MainComponent::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+	// (Our component is opaque, so we must completely fill the background with a solid colour)
+	g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
-    // You can add your drawing code here!
+	// You can add your drawing code here!
+
 }
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
+	// This is called when the MainContentComponent is resized.
+	// If you add any child components, this is where you should
+	// update their positions.
+	slider1.setBounds(50, 40, 40, getHeight() - 60);
 }
