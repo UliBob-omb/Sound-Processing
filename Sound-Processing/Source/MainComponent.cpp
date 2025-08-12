@@ -8,17 +8,141 @@ MainComponent::MainComponent()
 	// you add any child components.
 	int winWidth = 800;
 	int winHeight = 600;
+	int inChannelAmt = 1;
+
+	mstrFdrLabel.setEditable(false);
+	mstrFdrLabel.setFocusContainerType(juce::Component::FocusContainerType::none);
+	mstrFdrLabel.setInterceptsMouseClicks(false, false);
+	mstrFdrLabel.setText("Master", juce::dontSendNotification);
+	addAndMakeVisible(&mstrFdrLabel);
+
+	masterFader.setSliderStyle(juce::Slider::LinearHorizontal);
+	masterFader.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+	masterFader.setRange(-126.0, 0.0, 0.05);
+	masterFader.setSkewFactorFromMidPoint(-32.0);
+	masterFader.setPopupDisplayEnabled(true, false, this);
+	masterFader.setTextValueSuffix(" dB");
+	masterFader.setValue(-6.0);
+	addAndMakeVisible(&masterFader);
+
+	for (int channel = 0; channel < inChannelAmt; channel++, createdChannels++)
+	{
+		juce::Slider* fader = new juce::Slider();
+		channelFaders.add(fader);
+		channelFaders[channel]->setSliderStyle(juce::Slider::LinearVertical);
+		channelFaders[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		channelFaders[channel]->setRange(-126.0, 0.0, 0.05);
+		channelFaders[channel]->setSkewFactorFromMidPoint(-32.0);
+		channelFaders[channel]->setPopupDisplayEnabled(true, false, this);
+		channelFaders[channel]->setTextValueSuffix(" dB");
+		channelFaders[channel]->setValue(-6.0);
+		addAndMakeVisible(channelFaders[channel]);
+
+		juce::Slider* dial1 = new juce::Slider();
+		HFBoosts.add(dial1);
+		HFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		HFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		HFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
+		HFBoosts[channel]->setTextValueSuffix(" dB");
+		HFBoosts[channel]->setValue(0.0);
+		addAndMakeVisible(HFBoosts[channel]);
+
+		juce::Slider* dial2 = new juce::Slider();
+		LFBoosts.add(dial2);
+		LFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		LFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		LFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
+		LFBoosts[channel]->setTextValueSuffix(" dB");
+		LFBoosts[channel]->setValue(0.0);
+		addAndMakeVisible(LFBoosts[channel]);
+
+		juce::TextButton* focusButton = new juce::TextButton();
+		FocusButtons.add(focusButton);
+		FocusButtons[channel]->setButtonText("Focus");
+		FocusButtons[channel]->setInterceptsMouseClicks(true, false);
+		FocusButtons[channel]->setState(juce::Button::buttonNormal);
+		addAndMakeVisible(FocusButtons[channel]);
+
+		juce::TextButton* muteButton = new juce::TextButton();
+		MuteButtons.add(muteButton);
+		MuteButtons[channel]->setButtonText("Mute");
+		MuteButtons[channel]->setInterceptsMouseClicks(true, false);
+		MuteButtons[channel]->setState(juce::Button::buttonNormal);
+		addAndMakeVisible(MuteButtons[channel]);
+
+		juce::TextButton* listenButton = new juce::TextButton();
+		ListenButtons.add(listenButton);
+		ListenButtons[channel]->setButtonText("Solo");
+		ListenButtons[channel]->setInterceptsMouseClicks(true, false);
+		ListenButtons[channel]->setState(juce::Button::buttonNormal);
+		addAndMakeVisible(ListenButtons[channel]);
+
+		juce::Slider* dial3 = new juce::Slider();
+		HMFBoosts.add(dial3);
+		HMFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		HMFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HMFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		HMFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
+		HMFBoosts[channel]->setTextValueSuffix(" dB");
+		HMFBoosts[channel]->setValue(0.0);
+		addAndMakeVisible(HMFBoosts[channel]);
+
+		juce::Slider* dial4 = new juce::Slider();
+		HMFQLevels.add(dial4);
+		HMFQLevels[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		HMFQLevels[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HMFQLevels[channel]->setRange(0.01, 10.0, 0.01);
+		HMFQLevels[channel]->setPopupDisplayEnabled(true, false, this);
+		HMFQLevels[channel]->setTextValueSuffix(" Q");
+		HMFQLevels[channel]->setValue(2.0);
+		addAndMakeVisible(HMFQLevels[channel]);
+
+		juce::Slider* dial5 = new juce::Slider();
+		HMFCenterFreq.add(dial5);
+		HMFCenterFreq[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		HMFCenterFreq[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HMFCenterFreq[channel]->setRange(00.450, 20.000, 0.001); // y = 4887.5 * x^2 + 450, x = (0, 2)
+		HMFCenterFreq[channel]->setPopupDisplayEnabled(true, false, this);
+		HMFCenterFreq[channel]->setTextValueSuffix(" kHz");
+		HMFCenterFreq[channel]->setSkewFactorFromMidPoint(2.000);
+		HMFCenterFreq[channel]->setValue(05.338);
+		addAndMakeVisible(HMFCenterFreq[channel]);
+
+		juce::Slider* dial6 = new juce::Slider();
+		LMFBoosts.add(dial6);
+		LMFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		LMFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LMFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		LMFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
+		LMFBoosts[channel]->setTextValueSuffix(" dB");
+		LMFBoosts[channel]->setValue(0.0);
+		addAndMakeVisible(LMFBoosts[channel]);
+
+		juce::Slider* dial7 = new juce::Slider();
+		LMFQLevels.add(dial7);
+		LMFQLevels[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		LMFQLevels[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LMFQLevels[channel]->setRange(0.01, 10.0, 0.01);
+		LMFQLevels[channel]->setPopupDisplayEnabled(true, false, this);
+		LMFQLevels[channel]->setTextValueSuffix(" Q");
+		LMFQLevels[channel]->setValue(2.0);
+		addAndMakeVisible(LMFQLevels[channel]);
+
+		juce::Slider* dial8 = new juce::Slider();
+		LMFCenterFreq.add(dial8);
+		LMFCenterFreq[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+		LMFCenterFreq[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LMFCenterFreq[channel]->setRange(50.0, 1500.0, 0.001); // y = 362.5 * x^2 + 50, x = (0, 2)
+		LMFCenterFreq[channel]->setPopupDisplayEnabled(true, false, this);
+		LMFCenterFreq[channel]->setTextValueSuffix(" Hz");
+		LMFCenterFreq[channel]->setSkewFactorFromMidPoint(450.0);
+		LMFCenterFreq[channel]->setValue(450.0);
+		addAndMakeVisible(LMFCenterFreq[channel]);
+	}
+
 	setSize(winWidth, winHeight);
-
-	slider1.setSliderStyle(juce::Slider::LinearVertical);
-	slider1.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-	slider1.setRange(-126.0, 0.0, 0.05);
-	slider1.setPopupDisplayEnabled(true, false, this);
-	slider1.setTextValueSuffix(" dB");
-	slider1.setValue(1.0);
-	addAndMakeVisible(&slider1);
-	//auto slider2 = Slider(Slider::LinearBarVertical, Slider::TextBoxBelow);
-
 
 
 	// Some platforms require permissions to open input channels so request that here
@@ -31,7 +155,7 @@ MainComponent::MainComponent()
 	else
 	{
 		// Specify the number of input and output channels that we want to open
-		setAudioChannels (16, 2);
+		setAudioChannels (inChannelAmt, 2);
 	}
 }
 
@@ -118,5 +242,26 @@ void MainComponent::resized()
 	// This is called when the MainContentComponent is resized.
 	// If you add any child components, this is where you should
 	// update their positions.
-	slider1.setBounds(50, 40, 40, getHeight() - 60);
+	mstrFdrLabel.setBounds(50, 10, 80, 20);
+	masterFader.setBounds(50, 25, getWidth() - 100, 20);
+
+	if (createdChannels > 0)
+	{
+		channelFaders[0]->setBounds(50, 50, 20, getHeight() - 100);
+
+		FocusButtons[0]->setBounds(75, 50, 80, 30);
+		MuteButtons[0]->setBounds(75, 80, 80, 30);
+		ListenButtons[0]->setBounds(75, 110, 80, 30);
+
+		HFBoosts[0]->setBounds(75, 140, 65, 65);
+		LFBoosts[0]->setBounds(75, 200, 65, 65);
+
+		HMFCenterFreq[0]->setBounds(75, 260, 50, 50);
+		HMFQLevels[0]->setBounds(75, 300, 50, 50);
+		HMFBoosts[0]->setBounds(115, 280, 65, 65);
+
+		LMFCenterFreq[0]->setBounds(75, 350, 50, 50);
+		LMFQLevels[0]->setBounds(75, 390, 50, 50);
+		LMFBoosts[0]->setBounds(115, 370, 65, 65);
+	}
 }

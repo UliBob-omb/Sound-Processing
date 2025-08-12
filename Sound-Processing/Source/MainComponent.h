@@ -26,8 +26,27 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-    //MainComponent& pMainComponent;
-    juce::Slider slider1;
+    juce::Label mstrFdrLabel;
+    juce::Slider masterFader;
+
+    //============Per-Channel Components==============
+    int createdChannels = 0;
+    juce::OwnedArray<juce::Slider> channelFaders;
+    juce::OwnedArray<juce::TextButton> FocusButtons;
+    juce::OwnedArray<juce::TextButton> MuteButtons;
+    juce::OwnedArray<juce::TextButton> ListenButtons;
+
+    juce::OwnedArray<juce::Slider> HFBoosts;
+    juce::OwnedArray<juce::Slider> LFBoosts;
+
+    juce::OwnedArray<juce::Slider> HMFBoosts;
+    juce::OwnedArray<juce::Slider> HMFQLevels;
+    juce::OwnedArray<juce::Slider> HMFCenterFreq;
+
+    juce::OwnedArray<juce::Slider> LMFBoosts;
+    juce::OwnedArray<juce::Slider> LMFQLevels;
+    juce::OwnedArray<juce::Slider> LMFCenterFreq;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
