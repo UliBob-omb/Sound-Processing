@@ -1,5 +1,5 @@
 #include "MainComponent.h"
-
+#include "LevelMeter.h"
 
 //==============================================================================
 MainComponent::MainComponent()
@@ -8,22 +8,27 @@ MainComponent::MainComponent()
 	// you add any child components.
 	int winWidth = 800;
 	int winHeight = 600;
-	int inChannelAmt = 1;
+	int inChannelAmt = 3;
+	outputLevelsDb.resize(2); // stereo only (for now)
+	inputLevelsDb.resize(inChannelAmt);
 
 	mstrFdrLabel.setEditable(false);
 	mstrFdrLabel.setFocusContainerType(juce::Component::FocusContainerType::none);
 	mstrFdrLabel.setInterceptsMouseClicks(false, false);
 	mstrFdrLabel.setText("Master", juce::dontSendNotification);
 	addAndMakeVisible(&mstrFdrLabel);
-
+	
 	masterFader.setSliderStyle(juce::Slider::LinearHorizontal);
 	masterFader.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-	masterFader.setRange(-126.0, 0.0, 0.05);
-	masterFader.setSkewFactorFromMidPoint(-32.0);
+	masterFader.setRange(-100.0, 0.0, 0.05); // -144 dBFS is for 24-bit depth, 16-bit is -96 dBFS
+	masterFader.setSkewFactorFromMidPoint(-30.0);
 	masterFader.setPopupDisplayEnabled(true, false, this);
 	masterFader.setTextValueSuffix(" dB");
-	masterFader.setValue(-6.0);
-	addAndMakeVisible(&masterFader);
+	masterFader.setValue(-18.0);
+	addAndMakeVisible(&masterFader); 
+
+	addAndMakeVisible(&mstrLevelMeterL);
+	addAndMakeVisible(&mstrLevelMeterR);
 
 	for (int channel = 0; channel < inChannelAmt; channel++, createdChannels++)
 	{
@@ -31,18 +36,18 @@ MainComponent::MainComponent()
 		channelFaders.add(fader);
 		channelFaders[channel]->setSliderStyle(juce::Slider::LinearVertical);
 		channelFaders[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-		channelFaders[channel]->setRange(-126.0, 0.0, 0.05);
+		channelFaders[channel]->setRange(-100.0, 0.0, 0.05);
 		channelFaders[channel]->setSkewFactorFromMidPoint(-32.0);
 		channelFaders[channel]->setPopupDisplayEnabled(true, false, this);
 		channelFaders[channel]->setTextValueSuffix(" dB");
-		channelFaders[channel]->setValue(-6.0);
+		channelFaders[channel]->setValue(-18.0);
 		addAndMakeVisible(channelFaders[channel]);
 
 		juce::Slider* dial1 = new juce::Slider();
 		HFBoosts.add(dial1);
 		HFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
 		HFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-		HFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		HFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		HFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		HFBoosts[channel]->setTextValueSuffix(" dB");
 		HFBoosts[channel]->setValue(0.0);
@@ -52,7 +57,7 @@ MainComponent::MainComponent()
 		LFBoosts.add(dial2);
 		LFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
 		LFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-		LFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		LFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		LFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		LFBoosts[channel]->setTextValueSuffix(" dB");
 		LFBoosts[channel]->setValue(0.0);
@@ -83,7 +88,7 @@ MainComponent::MainComponent()
 		HMFBoosts.add(dial3);
 		HMFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
 		HMFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-		HMFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		HMFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		HMFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		HMFBoosts[channel]->setTextValueSuffix(" dB");
 		HMFBoosts[channel]->setValue(0.0);
@@ -114,7 +119,7 @@ MainComponent::MainComponent()
 		LMFBoosts.add(dial6);
 		LMFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
 		LMFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
-		LMFBoosts[channel]->setRange(-18.0, 18.0, 0.05);
+		LMFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		LMFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		LMFBoosts[channel]->setTextValueSuffix(" dB");
 		LMFBoosts[channel]->setValue(0.0);
@@ -150,7 +155,7 @@ MainComponent::MainComponent()
 		&& ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
 	{
 		juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
-										   [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
+										   [&] (bool granted) { setAudioChannels (granted ? inChannelAmt : 0, 2); });
 	}
 	else
 	{
@@ -177,6 +182,7 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 	// For more details, see the help for AudioProcessor::prepareToPlay()
 }
 
+
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
 	// Your audio-processing code goes here!
@@ -185,13 +191,18 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 
 	// Right now we are not producing any data, in which case we need to clear the buffer
 	// (to prevent the output of random noise)
-	
 
 	auto* device = deviceManager.getCurrentAudioDevice();
 	auto activeInChnnls = device->getActiveInputChannels();
 	auto activeOutChnnls = device->getActiveOutputChannels();
 	auto maxInChnnls = activeInChnnls.getHighestBit() + 1;
 	auto maxOutChnnls = activeOutChnnls.getHighestBit() + 1;
+	
+	for (auto channel = 0; channel < maxInChnnls; ++channel)
+	{
+		float inRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
+		inputLevelsDb.at(channel) = juce::Decibels::gainToDecibels(inRMSlvl);
+	}
 
 	for (auto channel = 0; channel < maxOutChnnls; ++channel)
 	{
@@ -216,6 +227,8 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 				}
 			}
 		}
+		float outRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
+		outputLevelsDb.at(channel) = outRMSlvl;
 	}
 }
 
@@ -244,24 +257,31 @@ void MainComponent::resized()
 	// update their positions.
 	mstrFdrLabel.setBounds(50, 10, 80, 20);
 	masterFader.setBounds(50, 25, getWidth() - 100, 20);
+	mstrLevelMeterL.setBounds(10, 10, 15, 40);
+	mstrLevelMeterR.setBounds(30, 10, 15, 40);
 
-	if (createdChannels > 0)
+	if (createdChannels <= 0)
 	{
-		channelFaders[0]->setBounds(50, 50, 20, getHeight() - 100);
+		return;
+	}
+	int channelOffset = 180;
+	for (int channel = 0; channel < createdChannels; channel++)
+	{
+		channelFaders[channel]->setBounds(50 + (channelOffset * channel), 50, 20, getHeight() - 100);
 
-		FocusButtons[0]->setBounds(75, 50, 80, 30);
-		MuteButtons[0]->setBounds(75, 80, 80, 30);
-		ListenButtons[0]->setBounds(75, 110, 80, 30);
+		FocusButtons[channel]->setBounds(75 + (channelOffset * channel), 50, 80, 30);
+		MuteButtons[channel]->setBounds(75 + (channelOffset * channel), 80, 80, 30);
+		ListenButtons[channel]->setBounds(75 + (channelOffset * channel), 110, 80, 30);
 
-		HFBoosts[0]->setBounds(75, 140, 65, 65);
-		LFBoosts[0]->setBounds(75, 200, 65, 65);
+		HFBoosts[channel]->setBounds(75 + (channelOffset * channel), 140, 65, 65);
+		LFBoosts[channel]->setBounds(75 + (channelOffset * channel), 200, 65, 65);
 
-		HMFCenterFreq[0]->setBounds(75, 260, 50, 50);
-		HMFQLevels[0]->setBounds(75, 300, 50, 50);
-		HMFBoosts[0]->setBounds(115, 280, 65, 65);
+		HMFCenterFreq[channel]->setBounds(75 + (channelOffset * channel), 260, 50, 50);
+		HMFQLevels[channel]->setBounds(75 + (channelOffset * channel), 300, 50, 50);
+		HMFBoosts[channel]->setBounds(115 + (channelOffset * channel), 280, 65, 65);
 
-		LMFCenterFreq[0]->setBounds(75, 350, 50, 50);
-		LMFQLevels[0]->setBounds(75, 390, 50, 50);
-		LMFBoosts[0]->setBounds(115, 370, 65, 65);
+		LMFCenterFreq[channel]->setBounds(75 + (channelOffset * channel), 350, 50, 50);
+		LMFQLevels[channel]->setBounds(75 + (channelOffset * channel), 390, 50, 50);
+		LMFBoosts[channel]->setBounds(115 + (channelOffset * channel), 370, 65, 65);
 	}
 }

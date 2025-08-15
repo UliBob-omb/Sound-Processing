@@ -29,8 +29,15 @@ private:
     juce::Label mstrFdrLabel;
     juce::Slider masterFader;
 
+    LevelMeter mstrLevelMeterL = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsDb.at(0)); }, true);
+    LevelMeter mstrLevelMeterR = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsDb.at(1)); }, true);
+    std::vector<float> outputLevelsDb;
     //============Per-Channel Components==============
     int createdChannels = 0;
+    
+    juce::OwnedArray<LevelMeter> inLevelMeters;
+    std::vector<float> inputLevelsDb;
+
     juce::OwnedArray<juce::Slider> channelFaders;
     juce::OwnedArray<juce::TextButton> FocusButtons;
     juce::OwnedArray<juce::TextButton> MuteButtons;
