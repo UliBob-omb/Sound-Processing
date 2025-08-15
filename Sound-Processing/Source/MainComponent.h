@@ -1,6 +1,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <vector>
+#include "LevelMeter.h"
 
 //==============================================================================
 /*
