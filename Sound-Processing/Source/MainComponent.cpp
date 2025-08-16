@@ -145,6 +145,10 @@ MainComponent::MainComponent()
 		LMFCenterFreq[channel]->setSkewFactorFromMidPoint(450.0);
 		LMFCenterFreq[channel]->setValue(450.0);
 		addAndMakeVisible(LMFCenterFreq[channel]);
+
+		LevelMeter* inLevelMeter = new LevelMeter([channel, this]() -> float {return juce::Decibels::gainToDecibels(inputLevelsDb.at(channel)); }, true);
+		inLevelMeters.add(inLevelMeter);
+		addAndMakeVisible(inLevelMeters[channel]);
 	}
 
 	setSize(winWidth, winHeight);
@@ -201,7 +205,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 	for (auto channel = 0; channel < maxInChnnls; ++channel)
 	{
 		float inRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
-		inputLevelsDb.at(channel) = juce::Decibels::gainToDecibels(inRMSlvl);
+		inputLevelsDb.at(channel) = inRMSlvl;
 	}
 
 	for (auto channel = 0; channel < maxOutChnnls; ++channel)
@@ -267,6 +271,8 @@ void MainComponent::resized()
 	int channelOffset = 180;
 	for (int channel = 0; channel < createdChannels; channel++)
 	{
+		inLevelMeters[channel]->setBounds(15 + (channelOffset * channel), 50, 20, getHeight() - 100);
+
 		channelFaders[channel]->setBounds(50 + (channelOffset * channel), 50, 20, getHeight() - 100);
 
 		FocusButtons[channel]->setBounds(75 + (channelOffset * channel), 50, 80, 30);
