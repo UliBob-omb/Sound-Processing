@@ -9,14 +9,14 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent
+class MainComponent  : public juce::AudioAppComponent, private juce::Slider::Listener
 {
 public:
     //==============================================================================
     MainComponent();
     ~MainComponent() override;
 
-    //==============================================================================
+    //=================================Audio Thread=================================
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
@@ -26,14 +26,17 @@ public:
     void resized() override;
 
 private:
+    void sliderValueChanged(juce::Slider* slider) override;
     //==============================================================================
     // Your private member variables go here...
     juce::Label mstrFdrLabel;
     juce::Slider masterFader;
+    double masterGain = 0.0;
 
     LevelMeter mstrLevelMeterL = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsDb.at(0)); }, true);
     LevelMeter mstrLevelMeterR = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsDb.at(1)); }, true);
     std::vector<float> outputLevelsDb;
+
     //============Per-Channel Components==============
     int createdChannels = 0;
     
@@ -41,6 +44,7 @@ private:
     std::vector<float> inputLevelsDb;
 
     juce::OwnedArray<juce::Slider> channelFaders;
+    std::vector<double> channelGains;
     juce::OwnedArray<juce::TextButton> FocusButtons;
     juce::OwnedArray<juce::TextButton> MuteButtons;
     juce::OwnedArray<juce::TextButton> ListenButtons;

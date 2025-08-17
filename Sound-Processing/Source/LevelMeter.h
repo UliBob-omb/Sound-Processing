@@ -14,8 +14,6 @@ public:
 
 	void timerCallback() override;
 
-	//LevelMeter operator =;
-
 private:
 	std::function<float()> valueSupplier;
 	juce::ColourGradient gradient;

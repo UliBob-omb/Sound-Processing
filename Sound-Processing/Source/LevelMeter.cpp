@@ -10,7 +10,7 @@ inline void LevelMeter::resized()
 {
 	const auto bounds = getLocalBounds().toFloat();
 	gradient = juce::ColourGradient{ juce::Colours::green, bounds.getBottomLeft(), juce::Colours::red, bounds.getTopLeft(), false };
-	gradient.addColour(0.82, juce::Colours::yellow); // starts at ~-18 dBFS
+	gradient.addColour(0.82, juce::Colours::yellow); // starts at ~-18 dBFS if range is -100 to 0dBFS
 }
 
 inline void LevelMeter::paint(juce::Graphics& g)
@@ -23,13 +23,13 @@ inline void LevelMeter::paint(juce::Graphics& g)
 	g.setGradientFill(gradient);
 	if (isVertical)
 	{
-		const auto scaledY = juce::jmap(valueSupplier(), -144.f, 0.f, 0.f, static_cast<float>(getHeight()));
+		const auto scaledY = juce::jmap(valueSupplier(), -100.f, 0.f, 0.f, static_cast<float>(getHeight()));
 		g.fillRect(bounds.removeFromBottom(scaledY));
 	}
 	else
 	{
-		const auto scaledX = juce::jmap(valueSupplier(), -144.f, 0.f, 0.f, static_cast<float>(getWidth()));
-		g.fillRect(bounds.removeFromBottom(scaledX));
+		const auto scaledX = juce::jmap(valueSupplier(), -100.f, 0.f, 0.f, static_cast<float>(getWidth()));
+		g.fillRect(bounds.removeFromLeft(scaledX));
 	}
 }
 

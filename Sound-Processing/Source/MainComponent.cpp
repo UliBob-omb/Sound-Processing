@@ -9,8 +9,12 @@ MainComponent::MainComponent()
 	int winWidth = 800;
 	int winHeight = 600;
 	int inChannelAmt = 3;
-	outputLevelsDb.resize(2); // stereo only (for now)
+	const double defaultdBFS = -10.0;
+	const double defaultMidPointdBFS = -18.0;
+	outputLevelsDb.resize(2);// stereo only (for now)
+	masterGain = juce::Decibels::decibelsToGain(defaultdBFS);
 	inputLevelsDb.resize(inChannelAmt);
+	channelGains.resize(inChannelAmt);
 
 	mstrFdrLabel.setEditable(false);
 	mstrFdrLabel.setFocusContainerType(juce::Component::FocusContainerType::none);
@@ -21,10 +25,12 @@ MainComponent::MainComponent()
 	masterFader.setSliderStyle(juce::Slider::LinearHorizontal);
 	masterFader.setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
 	masterFader.setRange(-100.0, 0.0, 0.05); // -144 dBFS is for 24-bit depth, 16-bit is -96 dBFS
-	masterFader.setSkewFactorFromMidPoint(-30.0);
+	masterFader.setSkewFactorFromMidPoint(defaultMidPointdBFS);
 	masterFader.setPopupDisplayEnabled(true, false, this);
 	masterFader.setTextValueSuffix(" dB");
-	masterFader.setValue(-18.0);
+	masterFader.setValue(defaultdBFS);
+	masterFader.addListener(this);
+
 	addAndMakeVisible(&masterFader); 
 
 	addAndMakeVisible(&mstrLevelMeterL);
@@ -37,10 +43,11 @@ MainComponent::MainComponent()
 		channelFaders[channel]->setSliderStyle(juce::Slider::LinearVertical);
 		channelFaders[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
 		channelFaders[channel]->setRange(-100.0, 0.0, 0.05);
-		channelFaders[channel]->setSkewFactorFromMidPoint(-32.0);
+		channelFaders[channel]->setSkewFactorFromMidPoint(defaultMidPointdBFS);
 		channelFaders[channel]->setPopupDisplayEnabled(true, false, this);
 		channelFaders[channel]->setTextValueSuffix(" dB");
-		channelFaders[channel]->setValue(-18.0);
+		channelFaders[channel]->setValue(defaultdBFS);
+		channelFaders[channel]->addListener(this);
 		addAndMakeVisible(channelFaders[channel]);
 
 		juce::Slider* dial1 = new juce::Slider();
@@ -186,15 +193,11 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 	// For more details, see the help for AudioProcessor::prepareToPlay()
 }
 
-
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
 	// Your audio-processing code goes here!
 
 	// For more details, see the help for AudioProcessor::getNextAudioBlock()
-
-	// Right now we are not producing any data, in which case we need to clear the buffer
-	// (to prevent the output of random noise)
 
 	auto* device = deviceManager.getCurrentAudioDevice();
 	auto activeInChnnls = device->getActiveInputChannels();
@@ -202,12 +205,33 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 	auto maxInChnnls = activeInChnnls.getHighestBit() + 1;
 	auto maxOutChnnls = activeOutChnnls.getHighestBit() + 1;
 	
+	// Input Channels
 	for (auto channel = 0; channel < maxInChnnls; ++channel)
 	{
-		float inRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
-		inputLevelsDb.at(channel) = inRMSlvl;
+		if (maxInChnnls == 0)
+		{
+		}
+		else
+		{
+			if (!activeInChnnls[channel])
+			{
+				bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
+			}
+			else
+			{
+				auto* inputBuffer = bufferToFill.buffer->getReadPointer(channel, bufferToFill.startSample);
+				auto* outputBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+				for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
+				{
+					outputBuffer[sample] = inputBuffer[sample] * float(channelGains[channel]);
+				}
+			}
+			float inRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
+			inputLevelsDb.at(channel) = inRMSlvl;
+		}
 	}
 
+	//Master Output
 	for (auto channel = 0; channel < maxOutChnnls; ++channel)
 	{
 		if ((!activeOutChnnls[channel]) || maxInChnnls == 0)
@@ -227,7 +251,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 				auto* outputBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
 				for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
 				{
-					outputBuffer[sample] = inputBuffer[sample]; // More Adjustments will be done later
+					outputBuffer[sample] = inputBuffer[sample] * float(masterGain); // More Adjustments will be done later
 				}
 			}
 		}
@@ -290,4 +314,22 @@ void MainComponent::resized()
 		LMFQLevels[channel]->setBounds(75 + (channelOffset * channel), 390, 50, 50);
 		LMFBoosts[channel]->setBounds(115 + (channelOffset * channel), 370, 65, 65);
 	}
+}
+
+void MainComponent::sliderValueChanged(juce::Slider* slider) 
+{
+	if (slider == &masterFader)
+	{
+		masterGain = juce::Decibels::decibelsToGain(slider->getValue());
+		return;
+	}
+	for (int i = 0; i < channelFaders.size(); i++)
+	{
+		if (slider == channelFaders[i])
+		{
+			channelGains[i] = juce::Decibels::decibelsToGain(slider->getValue());
+			return;
+		}
+	}
+
 }
