@@ -9,7 +9,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent, private juce::Slider::Listener
+class MainComponent  : public juce::AudioAppComponent, private juce::Slider::Listener, private juce::Button::Listener
 {
 public:
     //==============================================================================
@@ -26,7 +26,10 @@ public:
     void resized() override;
 
 private:
+    //=============================Handler Functions================================
     void sliderValueChanged(juce::Slider* slider) override;
+
+    void buttonClicked(juce::Button* button) override;
     //==============================================================================
     // Your private member variables go here...
     juce::Label mstrFdrLabel;
@@ -38,6 +41,7 @@ private:
     std::vector<float> outputLevelsDb;
 
     //============Per-Channel Components==============
+
     int createdChannels = 0;
     
     juce::OwnedArray<LevelMeter> inLevelMeters;
@@ -45,9 +49,11 @@ private:
 
     juce::OwnedArray<juce::Slider> channelFaders;
     std::vector<double> channelGains;
+
     juce::OwnedArray<juce::TextButton> FocusButtons;
     juce::OwnedArray<juce::TextButton> MuteButtons;
     juce::OwnedArray<juce::TextButton> ListenButtons;
+    int soloChannel = -1;
 
     juce::OwnedArray<juce::Slider> HFBoosts;
     juce::OwnedArray<juce::Slider> LFBoosts;

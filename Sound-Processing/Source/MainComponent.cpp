@@ -11,6 +11,7 @@ MainComponent::MainComponent()
 	int inChannelAmt = 3;
 	const double defaultdBFS = -10.0;
 	const double defaultMidPointdBFS = -18.0;
+
 	outputLevelsDb.resize(2);// stereo only (for now)
 	masterGain = juce::Decibels::decibelsToGain(defaultdBFS);
 	inputLevelsDb.resize(inChannelAmt);
@@ -75,6 +76,7 @@ MainComponent::MainComponent()
 		FocusButtons[channel]->setButtonText("Focus");
 		FocusButtons[channel]->setInterceptsMouseClicks(true, false);
 		FocusButtons[channel]->setState(juce::Button::buttonNormal);
+		FocusButtons[channel]->addListener(this);
 		addAndMakeVisible(FocusButtons[channel]);
 
 		juce::TextButton* muteButton = new juce::TextButton();
@@ -82,6 +84,7 @@ MainComponent::MainComponent()
 		MuteButtons[channel]->setButtonText("Mute");
 		MuteButtons[channel]->setInterceptsMouseClicks(true, false);
 		MuteButtons[channel]->setState(juce::Button::buttonNormal);
+		MuteButtons[channel]->addListener(this);
 		addAndMakeVisible(MuteButtons[channel]);
 
 		juce::TextButton* listenButton = new juce::TextButton();
@@ -89,6 +92,7 @@ MainComponent::MainComponent()
 		ListenButtons[channel]->setButtonText("Solo");
 		ListenButtons[channel]->setInterceptsMouseClicks(true, false);
 		ListenButtons[channel]->setState(juce::Button::buttonNormal);
+		ListenButtons[channel]->addListener(this);
 		addAndMakeVisible(ListenButtons[channel]);
 
 		juce::Slider* dial3 = new juce::Slider();
@@ -332,4 +336,14 @@ void MainComponent::sliderValueChanged(juce::Slider* slider)
 		}
 	}
 
+}
+
+void MainComponent::buttonClicked(juce::Button* button)
+{
+	for (int i = 0; i < createdChannels; i++)
+	{
+		if (button == FocusButtons[i]) {/*Focus Channel*/; return; }
+		if (button == MuteButtons[i]) { /*Mute Channel*/; return; }
+		if (button == ListenButtons[i]) { soloChannel == i ? soloChannel = -1 : soloChannel = i; return; }
+	}
 }
