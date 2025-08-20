@@ -219,7 +219,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 		}
 		else
 		{
-			if (!activeInChnnls[channel])
+			if (!activeInChnnls[channel] || mutedChannels[channel] == true)
 			{
 				bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
 			}
@@ -361,7 +361,7 @@ void MainComponent::buttonClicked(juce::Button* button)
 	for (int i = 0; i < createdChannels; i++)
 	{
 		if (button == FocusButtons[i]) {/*Focus Channel*/; return; }
-		if (button == MuteButtons[i]) { /*Mute Channel*/; return; }
+		if (button == MuteButtons[i]) { mutedChannels[i] = !mutedChannels[i]; return; }
 		if (button == ListenButtons[i]) { soloChannel == i ? soloChannel = -1 : soloChannel = i; return; }
 	}
 }
