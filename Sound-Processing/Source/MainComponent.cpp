@@ -242,6 +242,22 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 		{
 			bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
 		}
+		else if (soloChannel >= 0) // Change to if statement once master output and listen output are decoupled
+		{
+			if (!activeInChnnls[soloChannel])
+			{
+				soloChannel = -1; //since it may cause out of range error if the input isn't active
+			}
+			else
+			{
+				auto* inputBuffer = bufferToFill.buffer->getReadPointer(soloChannel, bufferToFill.startSample);
+				auto* outputBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+				for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
+				{
+					outputBuffer[sample] = inputBuffer[sample];  // output one input channel to listen device (WIP)
+				}
+			}
+		}
 		else
 		{
 			auto actualInputChannel = channel % maxInChnnls; // Repeat input channels if more out than in
