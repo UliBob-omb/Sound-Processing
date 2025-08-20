@@ -12,9 +12,9 @@ MainComponent::MainComponent()
 	const double defaultdBFS = -10.0;
 	const double defaultMidPointdBFS = -18.0;
 
-	outputLevelsDb.resize(2);// stereo only (for now)
+	outputLevelsLinear.resize(2);// stereo only (for now)
 	masterGain = juce::Decibels::decibelsToGain(defaultdBFS);
-	inputLevelsDb.resize(inChannelAmt);
+	inputLevelsLinear.resize(inChannelAmt);
 	channelGains.resize(inChannelAmt);
 
 	mstrFdrLabel.setEditable(false);
@@ -157,7 +157,7 @@ MainComponent::MainComponent()
 		LMFCenterFreq[channel]->setValue(450.0);
 		addAndMakeVisible(LMFCenterFreq[channel]);
 
-		LevelMeter* inLevelMeter = new LevelMeter([channel, this]() -> float {return juce::Decibels::gainToDecibels(inputLevelsDb.at(channel)); }, true);
+		LevelMeter* inLevelMeter = new LevelMeter([channel, this]() -> float {return juce::Decibels::gainToDecibels(inputLevelsLinear.at(channel)); }, true);
 		inLevelMeters.add(inLevelMeter);
 		addAndMakeVisible(inLevelMeters[channel]);
 	}
@@ -231,7 +231,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 				}
 			}
 			float inRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
-			inputLevelsDb.at(channel) = inRMSlvl;
+			inputLevelsLinear.at(channel) = inRMSlvl;
 		}
 	}
 
@@ -260,7 +260,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 			}
 		}
 		float outRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
-		outputLevelsDb.at(channel) = outRMSlvl;
+		outputLevelsLinear.at(channel) = outRMSlvl;
 	}
 }
 

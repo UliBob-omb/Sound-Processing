@@ -36,16 +36,16 @@ private:
     juce::Slider masterFader;
     double masterGain = 0.0;
 
-    LevelMeter mstrLevelMeterL = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsDb.at(0)); }, true);
-    LevelMeter mstrLevelMeterR = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsDb.at(1)); }, true);
-    std::vector<float> outputLevelsDb;
+    LevelMeter mstrLevelMeterL = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsLinear.at(0)); }, true);
+    LevelMeter mstrLevelMeterR = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsLinear.at(1)); }, true);
+    std::vector<float> outputLevelsLinear;
 
     //============Per-Channel Components==============
 
     int createdChannels = 0;
     
     juce::OwnedArray<LevelMeter> inLevelMeters;
-    std::vector<float> inputLevelsDb;
+    std::vector<float> inputLevelsLinear;
 
     juce::OwnedArray<juce::Slider> channelFaders;
     std::vector<double> channelGains;
