@@ -51,7 +51,10 @@ private:
     std::vector<double> channelGains;
 
     juce::OwnedArray<juce::TextButton> FocusButtons;
+
     juce::OwnedArray<juce::TextButton> MuteButtons;
+    std::vector<bool> mutedChannels;
+
     juce::OwnedArray<juce::TextButton> ListenButtons;
     int soloChannel = -1;
 

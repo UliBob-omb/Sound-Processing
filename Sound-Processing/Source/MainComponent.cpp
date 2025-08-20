@@ -16,6 +16,7 @@ MainComponent::MainComponent()
 	masterGain = juce::Decibels::decibelsToGain(defaultdBFS);
 	inputLevelsLinear.resize(inChannelAmt);
 	channelGains.resize(inChannelAmt);
+	mutedChannels.resize(inChannelAmt);
 
 	mstrFdrLabel.setEditable(false);
 	mstrFdrLabel.setFocusContainerType(juce::Component::FocusContainerType::none);
@@ -81,6 +82,7 @@ MainComponent::MainComponent()
 
 		juce::TextButton* muteButton = new juce::TextButton();
 		MuteButtons.add(muteButton);
+		mutedChannels.at(channel) = false;
 		MuteButtons[channel]->setButtonText("Mute");
 		MuteButtons[channel]->setInterceptsMouseClicks(true, false);
 		MuteButtons[channel]->setState(juce::Button::buttonNormal);
