@@ -30,11 +30,25 @@ private:
     void sliderValueChanged(juce::Slider* slider) override;
 
     void buttonClicked(juce::Button* button) override;
+
+    void updateAllFilters();
     //==============================================================================
     // Your private member variables go here...
     juce::Label mstrFdrLabel;
     juce::Slider masterFader;
     double masterGain = 0.0;
+    double currentSampleRate = 48000.;
+    int curSamplesPerBlockExpected = 480;
+
+    // Default Values
+    const double defaultdBFS = -10.0;
+    const double defaultMidPointdBFS = -18.0;
+    const double defaultQ = .707;
+    const double defaultBoostGain = 1.;
+    const double defaultFreqHMF = 5338.;
+    const double defaultFreqLMF = 450.;
+    const double defaultCutoffHF = 18000.;
+    const double defaultCutoffLF = 50.;
 
     LevelMeter mstrLevelMeterL = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsLinear.at(0)); }, true);
     LevelMeter mstrLevelMeterR = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsLinear.at(1)); }, true);
@@ -58,13 +72,18 @@ private:
     juce::OwnedArray<juce::TextButton> ListenButtons;
     int soloChannel = -1;
 
+    juce::OwnedArray<juce::IIRFilter> HF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HFBoosts;
+
+    juce::OwnedArray<juce::IIRFilter> LF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LFBoosts;
 
+    juce::OwnedArray<juce::IIRFilter> HMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HMFBoosts;
     juce::OwnedArray<juce::Slider> HMFQLevels;
     juce::OwnedArray<juce::Slider> HMFCenterFreq;
 
+    juce::OwnedArray<juce::IIRFilter> LMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LMFBoosts;
     juce::OwnedArray<juce::Slider> LMFQLevels;
     juce::OwnedArray<juce::Slider> LMFCenterFreq;
