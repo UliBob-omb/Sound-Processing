@@ -433,11 +433,11 @@ void MainComponent::buttonClicked(juce::Button* button)
 		if (button == MuteButtons[i]) { mutedChannels[i] = !mutedChannels[i]; button->setToggleState(mutedChannels[i], juce::dontSendNotification);  return; }
 		if (button == ListenButtons[i]) {
 			if (soloChannel == i) { 
-				ListenButtons[i]->setState(juce::Button::buttonNormal); soloChannel = -1;
+				button->setToggleState(false, juce::dontSendNotification); soloChannel = -1;
 			}
 			else {
-				ListenButtons[i]->setState(juce::Button::buttonDown); 
-				ListenButtons[soloChannel]->setState(juce::Button::buttonNormal); 
+				button->setToggleState(true, juce::dontSendNotification);
+				if (soloChannel >= 0) ListenButtons[soloChannel]->setToggleState(false, juce::dontSendNotification);
 				soloChannel = i;
 			}
 			return;
