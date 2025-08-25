@@ -16,12 +16,12 @@ public:
     MainComponent();
     ~MainComponent() override;
 
-    //=================================Audio Thread=================================
+    //==============================GUI Audio Thread=================================
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
 
-    //==============================================================================
+    //=====================================GUI=======================================
     void paint (juce::Graphics& g) override;
     void resized() override;
 
@@ -32,6 +32,8 @@ private:
     void buttonClicked(juce::Button* button) override;
 
     void updateAllFilters();
+    void toggleFilter(int channel);
+
     //==============================================================================
     // Your private member variables go here...
     juce::Label mstrFdrLabel;
@@ -64,7 +66,8 @@ private:
     juce::OwnedArray<juce::Slider> channelFaders;
     std::vector<double> channelGains;
 
-    juce::OwnedArray<juce::TextButton> FocusButtons;
+    juce::OwnedArray<juce::TextButton> EQToggleButtons;
+    std::vector<bool> enabledChannelEQs;
 
     juce::OwnedArray<juce::TextButton> MuteButtons;
     std::vector<bool> mutedChannels;
@@ -72,11 +75,16 @@ private:
     juce::OwnedArray<juce::TextButton> ListenButtons;
     int soloChannel = -1;
 
+    //juce::dsp::IIR::Filter<float> newFilter;
     juce::OwnedArray<juce::IIRFilter> HF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HFBoosts;
+    juce::OwnedArray<juce::Slider> HFQLevels;
+    juce::OwnedArray<juce::Slider> HFCenterFreq;
 
     juce::OwnedArray<juce::IIRFilter> LF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LFBoosts;
+    juce::OwnedArray<juce::Slider> LFQLevels;
+    juce::OwnedArray<juce::Slider> LFCenterFreq;
 
     juce::OwnedArray<juce::IIRFilter> HMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HMFBoosts;

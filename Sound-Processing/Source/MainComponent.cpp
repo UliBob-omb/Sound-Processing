@@ -8,13 +8,14 @@ MainComponent::MainComponent()
 	// you add any child components.
 	int winWidth = 800;
 	int winHeight = 600;
-	int inChannelAmt = 3;
+	int inChannelAmt = 2;
 
 	outputLevelsLinear.resize(2);// stereo only (for now)
 	masterGain = juce::Decibels::decibelsToGain(defaultdBFS);
 	inputLevelsLinear.resize(inChannelAmt);
 	channelGains.resize(inChannelAmt);
 	mutedChannels.resize(inChannelAmt);
+	enabledChannelEQs.resize(inChannelAmt);
 
 	mstrFdrLabel.setEditable(false);
 	mstrFdrLabel.setFocusContainerType(juce::Component::FocusContainerType::none);
@@ -50,11 +51,8 @@ MainComponent::MainComponent()
 		channelFaders[channel]->addListener(this);
 		addAndMakeVisible(channelFaders[channel]);
 
-		juce::IIRFilter filterHF;
-		juce::IIRCoefficients coef1;
-		coef1.makeHighShelf(currentSampleRate, defaultCutoffHF, defaultQ, 1.);
-		filterHF.setCoefficients(coef1);
-		HF_IIR_Filters.add(&filterHF);
+		juce::IIRFilter* filterHF = new juce::IIRFilter();
+		HF_IIR_Filters.add(filterHF);
 
 		juce::Slider* dial1 = new juce::Slider();
 		HFBoosts.add(dial1);
@@ -67,11 +65,8 @@ MainComponent::MainComponent()
 		HFBoosts[channel]->addListener(this);
 		addAndMakeVisible(HFBoosts[channel]);
 
-		juce::IIRFilter filterLF;
-		juce::IIRCoefficients coef2;
-		coef2.makeHighShelf(currentSampleRate, defaultCutoffLF, defaultQ, 1.);
-		filterLF.setCoefficients(coef2);
-		LF_IIR_Filters.add(&filterLF);
+		juce::IIRFilter* filterLF = new juce::IIRFilter;
+		LF_IIR_Filters.add(filterLF);
 
 		juce::Slider* dial2 = new juce::Slider();
 		LFBoosts.add(dial2);
@@ -85,16 +80,19 @@ MainComponent::MainComponent()
 		addAndMakeVisible(LFBoosts[channel]);
 
 		juce::TextButton* focusButton = new juce::TextButton();
-		FocusButtons.add(focusButton);
-		FocusButtons[channel]->setButtonText("Focus");
-		FocusButtons[channel]->setInterceptsMouseClicks(true, false);
-		FocusButtons[channel]->setState(juce::Button::buttonNormal);
-		FocusButtons[channel]->addListener(this);
-		addAndMakeVisible(FocusButtons[channel]);
+		EQToggleButtons.add(focusButton);
+		enabledChannelEQs.at(channel) = true;
+		EQToggleButtons[channel]->setToggleState(enabledChannelEQs[channel], juce::dontSendNotification);
+		EQToggleButtons[channel]->setButtonText("EQ");
+		EQToggleButtons[channel]->setInterceptsMouseClicks(true, false);
+		EQToggleButtons[channel]->setState(juce::Button::buttonNormal);
+		EQToggleButtons[channel]->addListener(this);
+		addAndMakeVisible(EQToggleButtons[channel]);
 
 		juce::TextButton* muteButton = new juce::TextButton();
 		MuteButtons.add(muteButton);
 		mutedChannels.at(channel) = false;
+		MuteButtons[channel]->setToggleState(mutedChannels[channel], juce::dontSendNotification);
 		MuteButtons[channel]->setButtonText("Mute");
 		MuteButtons[channel]->setInterceptsMouseClicks(true, false);
 		MuteButtons[channel]->setState(juce::Button::buttonNormal);
@@ -109,11 +107,8 @@ MainComponent::MainComponent()
 		ListenButtons[channel]->addListener(this);
 		addAndMakeVisible(ListenButtons[channel]);
 
-		juce::IIRFilter filterHMF;
-		juce::IIRCoefficients coef3;
-		coef3.makePeakFilter(currentSampleRate, defaultFreqHMF, defaultQ, defaultBoostGain);
-		filterHMF.setCoefficients(coef3);
-		HMF_IIR_Filters.add(&filterHMF);
+		juce::IIRFilter* filterHMF = new juce::IIRFilter();
+		HMF_IIR_Filters.add(filterHMF);
 
 		juce::Slider* dial3 = new juce::Slider();
 		HMFBoosts.add(dial3);
@@ -149,11 +144,8 @@ MainComponent::MainComponent()
 		HMFCenterFreq[channel]->addListener(this);
 		addAndMakeVisible(HMFCenterFreq[channel]);
 
-		juce::IIRFilter filterLMF;
-		juce::IIRCoefficients coef4;
-		coef4.makePeakFilter(currentSampleRate, defaultFreqLMF, defaultQ, defaultBoostGain);
-		filterLMF.setCoefficients(coef4);
-		LMF_IIR_Filters.add(&filterLMF);
+		juce::IIRFilter* filterLMF = new juce::IIRFilter();
+		LMF_IIR_Filters.add(filterLMF);
 
 		juce::Slider* dial6 = new juce::Slider();
 		LMFBoosts.add(dial6);
@@ -195,7 +187,6 @@ MainComponent::MainComponent()
 	}
 
 	setSize(winWidth, winHeight);
-
 
 	// Some platforms require permissions to open input channels so request that here
 	if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
@@ -241,13 +232,12 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 	// Your audio-processing code goes here!
 
 	// For more details, see the help for AudioProcessor::getNextAudioBlock()
-
 	auto* device = deviceManager.getCurrentAudioDevice();
 	auto activeInChnnls = device->getActiveInputChannels();
 	auto activeOutChnnls = device->getActiveOutputChannels();
 	auto maxInChnnls = activeInChnnls.getHighestBit() + 1;
 	auto maxOutChnnls = activeOutChnnls.getHighestBit() + 1;
-	
+
 	// Input Channels
 	for (auto channel = 0; channel < maxInChnnls; ++channel)
 	{
@@ -268,6 +258,10 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 				{
 					outputBuffer[sample] = inputBuffer[sample] * float(channelGains[channel]);
 				}
+				HF_IIR_Filters.getUnchecked(channel)->processSamples(outputBuffer, bufferToFill.numSamples);
+				LF_IIR_Filters.getUnchecked(channel)->processSamples(outputBuffer, bufferToFill.numSamples);
+				HMF_IIR_Filters.getUnchecked(channel)->processSamples(outputBuffer, bufferToFill.numSamples);
+				LMF_IIR_Filters.getUnchecked(channel)->processSamples(outputBuffer, bufferToFill.numSamples);
 			}
 			float inRMSlvl = bufferToFill.buffer->getRMSLevel(channel, bufferToFill.startSample, bufferToFill.numSamples);
 			inputLevelsLinear.at(channel) = inRMSlvl;
@@ -358,7 +352,7 @@ void MainComponent::resized()
 
 		channelFaders[channel]->setBounds(50 + (channelOffset * channel), 50, 20, getHeight() - 100);
 
-		FocusButtons[channel]->setBounds(75 + (channelOffset * channel), 50, 80, 30);
+		EQToggleButtons[channel]->setBounds(75 + (channelOffset * channel), 50, 80, 30);
 		MuteButtons[channel]->setBounds(75 + (channelOffset * channel), 80, 80, 30);
 		ListenButtons[channel]->setBounds(75 + (channelOffset * channel), 110, 80, 30);
 
@@ -375,6 +369,8 @@ void MainComponent::resized()
 	}
 }
 
+
+//=============================================================================
 void MainComponent::sliderValueChanged(juce::Slider* slider) 
 {
 	if (slider == &masterFader)
@@ -391,38 +387,38 @@ void MainComponent::sliderValueChanged(juce::Slider* slider)
 		}
 		else if (slider == HMFBoosts[i] || slider == HMFQLevels[i] || slider == HMFCenterFreq[i])
 		{
+			if (!enabledChannelEQs[i]) { return; }
 			double gain = juce::Decibels::decibelsToGain(HMFBoosts[i]->getValue());
 			double centerFreq = HMFCenterFreq[i]->getValue() * 1000.; // Since slider is in kHz
 			double Q = HMFQLevels[i]->getValue();
-			juce::IIRCoefficients coef;
-			coef.makePeakFilter(currentSampleRate, centerFreq, Q, gain);
-			HMF_IIR_Filters[i]->setCoefficients(coef);
+			HMF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makePeakFilter(currentSampleRate, centerFreq, Q, gain));
 			return;
 		}
 		else if (slider == LMFBoosts[i] || slider == LMFQLevels[i] || slider == LMFCenterFreq[i])
 		{
+			if (!enabledChannelEQs[i]) { return; }
 			double gain = juce::Decibels::decibelsToGain(LMFBoosts[i]->getValue());
 			double centerFreq = LMFCenterFreq[i]->getValue();
 			double Q = LMFQLevels[i]->getValue();
-			juce::IIRCoefficients coef;
-			coef.makePeakFilter(currentSampleRate, centerFreq, Q, gain);
-			LMF_IIR_Filters[i]->setCoefficients(coef);
+			LMF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makePeakFilter(currentSampleRate, centerFreq, Q, gain));
 			return;
 		}
 		else if (slider == HFBoosts[i])
 		{
+			if (!enabledChannelEQs[i]) { return; }
 			double gain = juce::Decibels::decibelsToGain(HFBoosts[i]->getValue());
-			juce::IIRCoefficients coef;
-			coef.makeHighShelf(currentSampleRate, defaultCutoffHF, defaultQ, gain);
-			HF_IIR_Filters[i]->setCoefficients(coef);
+			//double centerFreq = HFCenterFreq[i]->getValue();
+			//double Q = HFQLevels[i]->getValue();
+			HF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeLowPass(currentSampleRate, defaultCutoffHF, defaultQ));
 			return;
 		}
 		else if (slider == LFBoosts[i])
 		{
+			if (!enabledChannelEQs[i]) { return; }
 			double gain = juce::Decibels::decibelsToGain(LFBoosts[i]->getValue());
-			juce::IIRCoefficients coef;
-			coef.makeHighShelf(currentSampleRate, defaultCutoffLF, defaultQ, gain);
-			LF_IIR_Filters[i]->setCoefficients(coef);
+			//double centerFreq = LFCenterFreq[i]->getValue();
+			//double Q = LFQLevels[i]->getValue();
+			LF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeHighPass(currentSampleRate, defaultCutoffLF, defaultQ));
 			return;
 		}
 	}
@@ -433,9 +429,19 @@ void MainComponent::buttonClicked(juce::Button* button)
 {
 	for (int i = 0; i < createdChannels; i++)
 	{
-		if (button == FocusButtons[i]) {/*Focus Channel*/; return; }
-		if (button == MuteButtons[i]) { mutedChannels[i] = !mutedChannels[i]; return; }
-		if (button == ListenButtons[i]) { soloChannel == i ? soloChannel = -1 : soloChannel = i; return; }
+		if (button == EQToggleButtons[i]) { toggleFilter(i); button->setToggleState(enabledChannelEQs[i], juce::dontSendNotification); return; }
+		if (button == MuteButtons[i]) { mutedChannels[i] = !mutedChannels[i]; button->setToggleState(mutedChannels[i], juce::dontSendNotification);  return; }
+		if (button == ListenButtons[i]) {
+			if (soloChannel == i) { 
+				ListenButtons[i]->setState(juce::Button::buttonNormal); soloChannel = -1;
+			}
+			else {
+				ListenButtons[i]->setState(juce::Button::buttonDown); 
+				ListenButtons[soloChannel]->setState(juce::Button::buttonNormal); 
+				soloChannel = i;
+			}
+			return;
+		}
 	}
 }
 
@@ -449,25 +455,66 @@ void MainComponent::updateAllFilters()
 		gain = juce::Decibels::decibelsToGain(HMFBoosts[i]->getValue());
 		centerFreq = HMFCenterFreq[i]->getValue();
 		Q = HMFQLevels[i]->getValue();
-		juce::IIRCoefficients coef1;
-		coef1.makePeakFilter(currentSampleRate, centerFreq, Q, gain);
-		HMF_IIR_Filters[i]->setCoefficients(coef1);
+		HMF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makePeakFilter(currentSampleRate, centerFreq, Q, gain));
+		HMF_IIR_Filters[i]->reset();
 
 		gain = juce::Decibels::decibelsToGain(LMFBoosts[i]->getValue());
 		centerFreq = LMFCenterFreq[i]->getValue();
 		Q = LMFQLevels[i]->getValue();
-		juce::IIRCoefficients coef2;
-		coef2.makePeakFilter(currentSampleRate, centerFreq, Q, gain);
-		LMF_IIR_Filters[i]->setCoefficients(coef2);
+		LMF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makePeakFilter(currentSampleRate, centerFreq, Q, gain));
+		LMF_IIR_Filters[i]->reset();
 
 		gain = juce::Decibels::decibelsToGain(HFBoosts[i]->getValue());
-		juce::IIRCoefficients coef3;
-		coef3.makeHighShelf(currentSampleRate, defaultCutoffHF, defaultQ, gain);
-		HF_IIR_Filters[i]->setCoefficients(coef3);
+		HF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeHighShelf(currentSampleRate, defaultCutoffHF, defaultQ, gain));
+		HF_IIR_Filters[i]->reset();
 
 		gain = juce::Decibels::decibelsToGain(LFBoosts[i]->getValue());
-		juce::IIRCoefficients coef4;
-		coef4.makeHighShelf(currentSampleRate, defaultCutoffLF, defaultQ, gain);
-		LF_IIR_Filters[i]->setCoefficients(coef4);
+		LF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeLowShelf(currentSampleRate, defaultCutoffLF, defaultQ, gain));
+		LF_IIR_Filters[i]->reset();
+
+		if (!enabledChannelEQs[i])
+		{
+			HMF_IIR_Filters[i]->makeInactive();
+			LMF_IIR_Filters[i]->makeInactive();
+			HF_IIR_Filters[i]->makeInactive();
+			LF_IIR_Filters[i]->makeInactive();
+		}
+	}
+}
+
+void MainComponent::toggleFilter(int channel)
+{
+	enabledChannelEQs[channel] = !enabledChannelEQs[channel];
+	if (!enabledChannelEQs[channel])
+	{
+		HF_IIR_Filters[channel]->makeInactive();
+		LF_IIR_Filters[channel]->makeInactive();
+		HMF_IIR_Filters[channel]->makeInactive();
+		LMF_IIR_Filters[channel]->makeInactive();
+	}
+	else
+	{
+		double gain;
+		double centerFreq;
+		double Q;
+		gain = juce::Decibels::decibelsToGain(HMFBoosts[channel]->getValue());
+		centerFreq = HMFCenterFreq[channel]->getValue();
+		Q = HMFQLevels[channel]->getValue();
+		HMF_IIR_Filters[channel]->setCoefficients(juce::IIRCoefficients::makePeakFilter(currentSampleRate, centerFreq, Q, gain));
+		HMF_IIR_Filters[channel]->reset();
+
+		gain = juce::Decibels::decibelsToGain(LMFBoosts[channel]->getValue());
+		centerFreq = LMFCenterFreq[channel]->getValue();
+		Q = LMFQLevels[channel]->getValue();
+		LMF_IIR_Filters[channel]->setCoefficients(juce::IIRCoefficients::makePeakFilter(currentSampleRate, centerFreq, Q, gain));
+		LMF_IIR_Filters[channel]->reset();
+
+		gain = juce::Decibels::decibelsToGain(HFBoosts[channel]->getValue());
+		HF_IIR_Filters[channel]->setCoefficients(juce::IIRCoefficients::makeHighShelf(currentSampleRate, defaultCutoffHF, defaultQ, gain));
+		HF_IIR_Filters[channel]->reset();
+
+		gain = juce::Decibels::decibelsToGain(LFBoosts[channel]->getValue());
+		LF_IIR_Filters[channel]->setCoefficients(juce::IIRCoefficients::makeLowShelf(currentSampleRate, defaultCutoffLF, defaultQ, gain));
+		LF_IIR_Filters[channel]->reset();
 	}
 }
