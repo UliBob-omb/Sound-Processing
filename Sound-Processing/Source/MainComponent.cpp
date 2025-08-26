@@ -7,10 +7,10 @@ MainComponent::MainComponent()
 	// Make sure you set the size of the component after
 	// you add any child components.
 	int winWidth = 800;
-	int winHeight = 600;
+	int winHeight = 700;
 	int inChannelAmt = 2;
 
-	outputLevelsLinear.resize(2);// stereo only (for now)
+	outputLevelsLinear.resize(2);// one stereo channel only (for now)
 	masterGain = juce::Decibels::decibelsToGain(defaultdBFS);
 	inputLevelsLinear.resize(inChannelAmt);
 	channelGains.resize(inChannelAmt);
@@ -336,36 +336,47 @@ void MainComponent::resized()
 	// This is called when the MainContentComponent is resized.
 	// If you add any child components, this is where you should
 	// update their positions.
-	mstrFdrLabel.setBounds(50, 10, 80, 20);
-	masterFader.setBounds(50, 25, getWidth() - 100, 20);
-	mstrLevelMeterL.setBounds(10, 10, 15, 40);
-	mstrLevelMeterR.setBounds(30, 10, 15, 40);
+	int mstrFdrPosX = OUTER_PAD + (INNER_PAD * 3) + MASTER_LVL_MTR_WIDTH;
+	int mstrFdrPosY = LABEL_HEIGHT + OUTER_PAD + INNER_PAD;
+	int mstFdrLength = (getWidth() * MASTER_WIDTH_PRCNT) - (INNER_PAD + OUTER_PAD + mstrFdrPosX);
+	int mstrLvlMtrHeight = (MASTER_HEIGHT_PRCNT * getHeight()) - (OUTER_PAD + INNER_PAD);
+
+	mstrFdrLabel.setBounds(mstrFdrPosX, OUTER_PAD, 80, LABEL_HEIGHT);
+	masterFader.setBounds(mstrFdrPosX, mstrFdrPosY, mstFdrLength, FADER_WIDTH);
+	mstrLevelMeterL.setBounds(OUTER_PAD, OUTER_PAD, MASTER_LVL_MTR_WIDTH, mstrLvlMtrHeight);
+	mstrLevelMeterR.setBounds(OUTER_PAD + MASTER_LVL_MTR_WIDTH + INNER_PAD, OUTER_PAD, MASTER_LVL_MTR_WIDTH, mstrLvlMtrHeight);
 
 	if (createdChannels <= 0)
 	{
 		return;
 	}
-	int channelOffset = 180;
+	int channelPosY = mstrLvlMtrHeight + INNER_PAD + OUTER_PAD;
+	int channelOffset = CHANNEL_WIDTH + INNER_PAD;
+	int channelHeight = (getHeight() * CHANNEL_HEIGHT_PRCNT) - (OUTER_PAD + INNER_PAD);
 	for (int channel = 0; channel < createdChannels; channel++)
 	{
-		inLevelMeters[channel]->setBounds(15 + (channelOffset * channel), 50, 20, getHeight() - 100);
+		int curChOffset = channelOffset * channel;
+		inLevelMeters[channel]->setBounds(OUTER_PAD + curChOffset, channelPosY, CHANNEL_LVL_MTR_WIDTH, channelHeight);
+		channelFaders[channel]->setBounds(OUTER_PAD + INNER_PAD + CHANNEL_LVL_MTR_WIDTH + curChOffset, channelPosY, FADER_WIDTH, channelHeight);
 
-		channelFaders[channel]->setBounds(50 + (channelOffset * channel), 50, 20, getHeight() - 100);
+		int rightChSctnPosX = FADER_WIDTH + OUTER_PAD + (INNER_PAD * 2) + CHANNEL_LVL_MTR_WIDTH;
+		EQToggleButtons[channel]->setBounds(rightChSctnPosX + curChOffset, channelPosY, CHANNEL_BTN_WIDTH, CHANNEL_BTN_HEIGHT);
+		MuteButtons[channel]->setBounds(rightChSctnPosX + curChOffset, channelPosY + CHANNEL_BTN_HEIGHT, CHANNEL_BTN_WIDTH, CHANNEL_BTN_HEIGHT);
+		ListenButtons[channel]->setBounds(rightChSctnPosX + curChOffset, channelPosY + (CHANNEL_BTN_HEIGHT * 2), CHANNEL_BTN_WIDTH, CHANNEL_BTN_HEIGHT);
 
-		EQToggleButtons[channel]->setBounds(75 + (channelOffset * channel), 50, 80, 30);
-		MuteButtons[channel]->setBounds(75 + (channelOffset * channel), 80, 80, 30);
-		ListenButtons[channel]->setBounds(75 + (channelOffset * channel), 110, 80, 30);
+		int dialStartPosY = channelPosY + (CHANNEL_BTN_HEIGHT * 3) + INNER_PAD;
+		HFBoosts[channel]->setBounds(rightChSctnPosX + curChOffset, dialStartPosY, BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
+		LFBoosts[channel]->setBounds(rightChSctnPosX + SMALL_DIAL_WIDTH + curChOffset, dialStartPosY + (BIG_DIAL_WIDTH * 0.5f), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
 
-		HFBoosts[channel]->setBounds(75 + (channelOffset * channel), 140, 65, 65);
-		LFBoosts[channel]->setBounds(75 + (channelOffset * channel), 200, 65, 65);
+		int midFreqDialPosX = rightChSctnPosX + SMALL_DIAL_WIDTH;
+		int midFreqStartPosY = dialStartPosY + (BIG_DIAL_WIDTH * 1.5f);
+		HMFCenterFreq[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY, SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
+		HMFQLevels[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
+		HMFBoosts[channel]->setBounds(midFreqDialPosX + curChOffset, midFreqStartPosY + (0.5f * SMALL_DIAL_WIDTH), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
 
-		HMFCenterFreq[channel]->setBounds(75 + (channelOffset * channel), 260, 50, 50);
-		HMFQLevels[channel]->setBounds(75 + (channelOffset * channel), 300, 50, 50);
-		HMFBoosts[channel]->setBounds(115 + (channelOffset * channel), 280, 65, 65);
-
-		LMFCenterFreq[channel]->setBounds(75 + (channelOffset * channel), 350, 50, 50);
-		LMFQLevels[channel]->setBounds(75 + (channelOffset * channel), 390, 50, 50);
-		LMFBoosts[channel]->setBounds(115 + (channelOffset * channel), 370, 65, 65);
+		LMFCenterFreq[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + (SMALL_DIAL_WIDTH * 2), SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
+		LMFQLevels[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + (SMALL_DIAL_WIDTH * 3), SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
+		LMFBoosts[channel]->setBounds(midFreqDialPosX + curChOffset, midFreqStartPosY + (0.5f * SMALL_DIAL_WIDTH) + (SMALL_DIAL_WIDTH * 2), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
 	}
 }
 

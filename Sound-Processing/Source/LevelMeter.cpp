@@ -15,7 +15,7 @@ inline void LevelMeter::resized()
 
 inline void LevelMeter::paint(juce::Graphics& g)
 {
-	auto bounds = getLocalBounds().toFloat().reduced(3.f);
+	auto bounds = getLocalBounds().toFloat();
 
 	g.setColour(juce::Colours::black);
 	g.fillRect(bounds);

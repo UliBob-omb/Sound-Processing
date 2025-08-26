@@ -32,6 +32,7 @@ private:
     void buttonClicked(juce::Button* button) override;
 
     void updateAllFilters();
+
     void toggleFilter(int channel);
 
     //==============================================================================
@@ -42,7 +43,23 @@ private:
     double currentSampleRate = 48000.;
     int curSamplesPerBlockExpected = 480;
 
-    // Default Values
+    // Default GUI Dimensions/Padding
+    const int INNER_PAD = 10;
+    const int OUTER_PAD = 15;
+    const float MASTER_HEIGHT_PRCNT = 0.20f;
+    const float MASTER_WIDTH_PRCNT = 1.00f;
+    const float CHANNEL_HEIGHT_PRCNT = 0.80f;
+    const int CHANNEL_WIDTH = 180;
+    const int MASTER_LVL_MTR_WIDTH = 15;
+    const int LABEL_HEIGHT = 20;
+    const int FADER_WIDTH = 20;
+    const int BIG_DIAL_WIDTH = 65;
+    const int SMALL_DIAL_WIDTH = 55;
+    const int CHANNEL_LVL_MTR_WIDTH = 20;
+    const int CHANNEL_BTN_WIDTH = 80;
+    const int CHANNEL_BTN_HEIGHT = 30;
+
+    // Default Channel Values
     const double defaultdBFS = -10.0;
     const double defaultMidPointdBFS = -18.0;
     const double defaultQ = .707;
