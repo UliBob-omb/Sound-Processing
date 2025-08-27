@@ -54,10 +54,15 @@ MainComponent::MainComponent()
 		juce::IIRFilter* filterHF = new juce::IIRFilter();
 		HF_IIR_Filters.add(filterHF);
 
+		juce::Label* labelHF = new juce::Label("HFLabel" + channel, "HF");
+		HFLabels.add(labelHF);
+		HFLabels[channel]->setJustificationType(juce::Justification::centredTop);
+		addAndMakeVisible(HFLabels[channel]);
+
 		juce::Slider* dial1 = new juce::Slider();
 		HFBoosts.add(dial1);
 		HFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		HFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HFBoosts[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, BIG_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		HFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		HFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		HFBoosts[channel]->setTextValueSuffix(" dB");
@@ -68,10 +73,15 @@ MainComponent::MainComponent()
 		juce::IIRFilter* filterLF = new juce::IIRFilter;
 		LF_IIR_Filters.add(filterLF);
 
+		juce::Label* labelLF = new juce::Label("LFLabel" + channel, "LF");
+		LFLabels.add(labelLF);
+		LFLabels[channel]->setJustificationType(juce::Justification::centredBottom);
+		addAndMakeVisible(LFLabels[channel]);
+
 		juce::Slider* dial2 = new juce::Slider();
 		LFBoosts.add(dial2);
 		LFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		LFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LFBoosts[channel]->setTextBoxStyle(juce::Slider::TextBoxAbove, true, BIG_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		LFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		LFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		LFBoosts[channel]->setTextValueSuffix(" dB");
@@ -110,10 +120,15 @@ MainComponent::MainComponent()
 		juce::IIRFilter* filterHMF = new juce::IIRFilter();
 		HMF_IIR_Filters.add(filterHMF);
 
+		juce::Label* labelHMF = new juce::Label("HMFLabel" + channel, "HMF");
+		HMFLabels.add(labelHMF);
+		HMFLabels[channel]->setJustificationType(juce::Justification::centredBottom);
+		addAndMakeVisible(HMFLabels[channel]);
+
 		juce::Slider* dial3 = new juce::Slider();
 		HMFBoosts.add(dial3);
 		HMFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		HMFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HMFBoosts[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, BIG_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		HMFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		HMFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		HMFBoosts[channel]->setTextValueSuffix(" dB");
@@ -124,7 +139,7 @@ MainComponent::MainComponent()
 		juce::Slider* dial4 = new juce::Slider();
 		HMFQLevels.add(dial4);
 		HMFQLevels[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		HMFQLevels[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HMFQLevels[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, SMALL_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		HMFQLevels[channel]->setRange(0.01, 10.0, 0.01);
 		HMFQLevels[channel]->setPopupDisplayEnabled(true, false, this);
 		HMFQLevels[channel]->setTextValueSuffix(" Q");
@@ -135,7 +150,7 @@ MainComponent::MainComponent()
 		juce::Slider* dial5 = new juce::Slider();
 		HMFCenterFreq.add(dial5);
 		HMFCenterFreq[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		HMFCenterFreq[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		HMFCenterFreq[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, SMALL_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		HMFCenterFreq[channel]->setRange(00.450, 20.000, 0.001); // y = 4887.5 * x^2 + 450, x = (0, 2)
 		HMFCenterFreq[channel]->setPopupDisplayEnabled(true, false, this);
 		HMFCenterFreq[channel]->setTextValueSuffix(" kHz");
@@ -147,10 +162,15 @@ MainComponent::MainComponent()
 		juce::IIRFilter* filterLMF = new juce::IIRFilter();
 		LMF_IIR_Filters.add(filterLMF);
 
+		juce::Label* labelLMF = new juce::Label("LMFLabel" + channel, "LMF");
+		LMFLabels.add(labelLMF);
+		LMFLabels[channel]->setJustificationType(juce::Justification::centredBottom);
+		addAndMakeVisible(LMFLabels[channel]);
+
 		juce::Slider* dial6 = new juce::Slider();
 		LMFBoosts.add(dial6);
 		LMFBoosts[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		LMFBoosts[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LMFBoosts[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, BIG_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		LMFBoosts[channel]->setRange(-15.0, 15.0, 0.05);
 		LMFBoosts[channel]->setPopupDisplayEnabled(true, false, this);
 		LMFBoosts[channel]->setTextValueSuffix(" dB");
@@ -161,7 +181,7 @@ MainComponent::MainComponent()
 		juce::Slider* dial7 = new juce::Slider();
 		LMFQLevels.add(dial7);
 		LMFQLevels[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		LMFQLevels[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LMFQLevels[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, SMALL_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		LMFQLevels[channel]->setRange(0.01, 10.0, 0.01);
 		LMFQLevels[channel]->setPopupDisplayEnabled(true, false, this);
 		LMFQLevels[channel]->setTextValueSuffix(" Q");
@@ -172,7 +192,7 @@ MainComponent::MainComponent()
 		juce::Slider* dial8 = new juce::Slider();
 		LMFCenterFreq.add(dial8);
 		LMFCenterFreq[channel]->setSliderStyle(juce::Slider::RotaryVerticalDrag);
-		LMFCenterFreq[channel]->setTextBoxStyle(juce::Slider::NoTextBox, false, 90, 0);
+		LMFCenterFreq[channel]->setTextBoxStyle(juce::Slider::TextBoxBelow, true, SMALL_DIAL_WIDTH * 0.8f, LABEL_HEIGHT);
 		LMFCenterFreq[channel]->setRange(50.0, 1500.0, 0.001); // y = 362.5 * x^2 + 50, x = (0, 2)
 		LMFCenterFreq[channel]->setPopupDisplayEnabled(true, false, this);
 		LMFCenterFreq[channel]->setTextValueSuffix(" Hz");
@@ -365,18 +385,23 @@ void MainComponent::resized()
 		ListenButtons[channel]->setBounds(rightChSctnPosX + curChOffset, channelPosY + (CHANNEL_BTN_HEIGHT * 2), CHANNEL_BTN_WIDTH, CHANNEL_BTN_HEIGHT);
 
 		int dialStartPosY = channelPosY + (CHANNEL_BTN_HEIGHT * 3) + INNER_PAD;
-		HFBoosts[channel]->setBounds(rightChSctnPosX + curChOffset, dialStartPosY, BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
-		LFBoosts[channel]->setBounds(rightChSctnPosX + SMALL_DIAL_WIDTH + curChOffset, dialStartPosY + (BIG_DIAL_WIDTH * 0.5f), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
+		HFBoosts[channel]->setBounds(rightChSctnPosX + curChOffset, dialStartPosY, BIG_DIAL_WIDTH, BIG_DIAL_WIDTH + LABEL_HEIGHT);
+		LFBoosts[channel]->setBounds(rightChSctnPosX + SMALL_DIAL_WIDTH + curChOffset, dialStartPosY + (BIG_DIAL_WIDTH * 0.5f), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH + LABEL_HEIGHT);
+		HFLabels[channel]->setBounds(rightChSctnPosX + curChOffset, dialStartPosY + BIG_DIAL_WIDTH + LABEL_HEIGHT, BIG_DIAL_WIDTH, LABEL_HEIGHT);
+		LFLabels[channel]->setBounds(rightChSctnPosX + curChOffset + SMALL_DIAL_WIDTH, dialStartPosY, BIG_DIAL_WIDTH, LABEL_HEIGHT);
 
 		int midFreqDialPosX = rightChSctnPosX + SMALL_DIAL_WIDTH;
-		int midFreqStartPosY = dialStartPosY + (BIG_DIAL_WIDTH * 1.5f);
-		HMFCenterFreq[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY, SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
-		HMFQLevels[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
-		HMFBoosts[channel]->setBounds(midFreqDialPosX + curChOffset, midFreqStartPosY + (0.5f * SMALL_DIAL_WIDTH), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
+		int midFreqStartPosY = dialStartPosY + (BIG_DIAL_WIDTH * 1.5f) + INNER_PAD*1.5f;
+		HMFCenterFreq[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY, SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH + LABEL_HEIGHT);
+		HMFQLevels[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + SMALL_DIAL_WIDTH + LABEL_HEIGHT, SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH + LABEL_HEIGHT);
+		HMFBoosts[channel]->setBounds(midFreqDialPosX + curChOffset, midFreqStartPosY + (0.5f * (SMALL_DIAL_WIDTH + LABEL_HEIGHT)), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH + LABEL_HEIGHT);
+		HMFLabels[channel]->setBounds(rightChSctnPosX + curChOffset + SMALL_DIAL_WIDTH, midFreqStartPosY, BIG_DIAL_WIDTH, LABEL_HEIGHT);
 
-		LMFCenterFreq[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + (SMALL_DIAL_WIDTH * 2), SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
-		LMFQLevels[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + (SMALL_DIAL_WIDTH * 3), SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH);
-		LMFBoosts[channel]->setBounds(midFreqDialPosX + curChOffset, midFreqStartPosY + (0.5f * SMALL_DIAL_WIDTH) + (SMALL_DIAL_WIDTH * 2), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH);
+		midFreqStartPosY += INNER_PAD * 1.5f;
+		LMFCenterFreq[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + ((SMALL_DIAL_WIDTH + LABEL_HEIGHT) * 2), SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH + LABEL_HEIGHT);
+		LMFQLevels[channel]->setBounds(rightChSctnPosX + curChOffset, midFreqStartPosY + ((SMALL_DIAL_WIDTH + LABEL_HEIGHT) * 3), SMALL_DIAL_WIDTH, SMALL_DIAL_WIDTH + LABEL_HEIGHT);
+		LMFBoosts[channel]->setBounds(midFreqDialPosX + curChOffset, midFreqStartPosY + ((SMALL_DIAL_WIDTH + LABEL_HEIGHT) * 2.5f), BIG_DIAL_WIDTH, BIG_DIAL_WIDTH + LABEL_HEIGHT);
+		LMFLabels[channel]->setBounds(rightChSctnPosX + curChOffset + SMALL_DIAL_WIDTH, midFreqStartPosY + ((SMALL_DIAL_WIDTH + LABEL_HEIGHT) * 2), BIG_DIAL_WIDTH, LABEL_HEIGHT);
 	}
 }
 

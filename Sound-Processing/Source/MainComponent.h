@@ -93,21 +93,25 @@ private:
     int soloChannel = -1;
 
     //juce::dsp::IIR::Filter<float> newFilter;
+    juce::OwnedArray<juce::Label> HFLabels;
     juce::OwnedArray<juce::IIRFilter> HF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HFBoosts;
     juce::OwnedArray<juce::Slider> HFQLevels;
     juce::OwnedArray<juce::Slider> HFCenterFreq;
 
+    juce::OwnedArray<juce::Label> LFLabels;
     juce::OwnedArray<juce::IIRFilter> LF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LFBoosts;
     juce::OwnedArray<juce::Slider> LFQLevels;
     juce::OwnedArray<juce::Slider> LFCenterFreq;
 
+    juce::OwnedArray<juce::Label> HMFLabels;
     juce::OwnedArray<juce::IIRFilter> HMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HMFBoosts;
     juce::OwnedArray<juce::Slider> HMFQLevels;
     juce::OwnedArray<juce::Slider> HMFCenterFreq;
 
+    juce::OwnedArray<juce::Label> LMFLabels;
     juce::OwnedArray<juce::IIRFilter> LMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LMFBoosts;
     juce::OwnedArray<juce::Slider> LMFQLevels;
