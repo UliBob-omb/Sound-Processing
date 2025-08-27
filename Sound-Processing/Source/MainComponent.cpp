@@ -6,8 +6,8 @@ MainComponent::MainComponent()
 {
 	// Make sure you set the size of the component after
 	// you add any child components.
-	int winWidth = 800;
-	int winHeight = 700;
+	int minWinWidth = 800;
+	int minWinHeight = 700;
 	int inChannelAmt = 2;
 
 	outputLevelsLinear.resize(2);// one stereo channel only (for now)
@@ -186,7 +186,7 @@ MainComponent::MainComponent()
 		addAndMakeVisible(inLevelMeters[channel]);
 	}
 
-	setSize(winWidth, winHeight);
+	setSize(minWinWidth, minWinHeight);
 
 	// Some platforms require permissions to open input channels so request that here
 	if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
