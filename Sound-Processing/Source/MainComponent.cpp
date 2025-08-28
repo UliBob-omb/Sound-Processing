@@ -7,7 +7,7 @@ MainComponent::MainComponent()
 	// Make sure you set the size of the component after
 	// you add any child components.
 	int minWinWidth = 800;
-	int minWinHeight = 700;
+	int minWinHeight = 750;
 	int inChannelAmt = 2;
 
 	outputLevelsLinear.resize(2);// one stereo channel only (for now)
@@ -348,7 +348,18 @@ void MainComponent::paint (juce::Graphics& g)
 	g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 	// You can add your drawing code here!
-
+	g.setColour(juce::Colour(127, 127, 127));
+	int lineThickness = 1;
+	int outlineOffset = 3;
+	g.drawRect(mstrLevelMeterL.getPosition().getX() - outlineOffset, mstrLevelMeterL.getPosition().getY() - outlineOffset, getWidth() - (OUTER_PAD * 2) + outlineOffset, mstrLevelMeterL.getHeight() + (outlineOffset * 2), lineThickness);
+	int mstrLvlMtrHeight = (MASTER_HEIGHT_PRCNT * getHeight()) - (OUTER_PAD);
+	int channelPosY = mstrLvlMtrHeight + INNER_PAD + OUTER_PAD;
+	int channelOffset = CHANNEL_WIDTH + INNER_PAD;
+	int channelHeight = (getHeight() * CHANNEL_HEIGHT_PRCNT) - (OUTER_PAD + INNER_PAD);
+	for (int channel = 1; channel <= createdChannels; channel++)
+	{
+		g.drawVerticalLine(OUTER_PAD + (channelOffset * channel) - (INNER_PAD * 0.5f), channelPosY, channelPosY + channelHeight);
+	}
 }
 
 void MainComponent::resized()
@@ -359,7 +370,7 @@ void MainComponent::resized()
 	int mstrFdrPosX = OUTER_PAD + (INNER_PAD * 3) + MASTER_LVL_MTR_WIDTH;
 	int mstrFdrPosY = LABEL_HEIGHT + OUTER_PAD + INNER_PAD;
 	int mstFdrLength = (getWidth() * MASTER_WIDTH_PRCNT) - (INNER_PAD + OUTER_PAD + mstrFdrPosX);
-	int mstrLvlMtrHeight = (MASTER_HEIGHT_PRCNT * getHeight()) - (OUTER_PAD + INNER_PAD);
+	int mstrLvlMtrHeight = (MASTER_HEIGHT_PRCNT * getHeight()) - (OUTER_PAD);
 
 	mstrFdrLabel.setBounds(mstrFdrPosX, OUTER_PAD, 80, LABEL_HEIGHT);
 	masterFader.setBounds(mstrFdrPosX, mstrFdrPosY, mstFdrLength, FADER_WIDTH);
@@ -445,7 +456,7 @@ void MainComponent::sliderValueChanged(juce::Slider* slider)
 			double gain = juce::Decibels::decibelsToGain(HFBoosts[i]->getValue());
 			//double centerFreq = HFCenterFreq[i]->getValue();
 			//double Q = HFQLevels[i]->getValue();
-			HF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeLowPass(currentSampleRate, defaultCutoffHF, defaultQ));
+			HF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeHighShelf(currentSampleRate, defaultCutoffHF, defaultQ, gain));
 			return;
 		}
 		else if (slider == LFBoosts[i])
@@ -454,7 +465,7 @@ void MainComponent::sliderValueChanged(juce::Slider* slider)
 			double gain = juce::Decibels::decibelsToGain(LFBoosts[i]->getValue());
 			//double centerFreq = LFCenterFreq[i]->getValue();
 			//double Q = LFQLevels[i]->getValue();
-			LF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeHighPass(currentSampleRate, defaultCutoffLF, defaultQ));
+			LF_IIR_Filters[i]->setCoefficients(juce::IIRCoefficients::makeLowShelf(currentSampleRate, defaultCutoffLF, defaultQ, gain));
 			return;
 		}
 	}
