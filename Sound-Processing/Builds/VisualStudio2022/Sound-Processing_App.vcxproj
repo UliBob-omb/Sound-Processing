@@ -4306,6 +4306,7 @@
     <ClInclude Include="..\..\..\..\..\..\Program Files\JUCE\modules\juce_gui_extra\native\juce_NSViewFrameWatcher_mac.h" />
     <ClInclude Include="..\..\..\..\..\..\Program Files\JUCE\modules\juce_gui_extra\juce_gui_extra.h" />
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h" />
+    <ClInclude Include="InputAudioSource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\Program Files\JUCE\modules\juce_audio_devices\native\oboe\src\common\README.md" />

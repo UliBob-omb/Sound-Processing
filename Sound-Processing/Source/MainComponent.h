@@ -72,6 +72,8 @@ private:
     LevelMeter mstrLevelMeterL = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsLinear.at(0)); }, true);
     LevelMeter mstrLevelMeterR = LevelMeter([&]() -> float {return juce::Decibels::gainToDecibels(outputLevelsLinear.at(1)); }, true);
     std::vector<float> outputLevelsLinear;
+    juce::MixerAudioSource mixer = juce::MixerAudioSource();
+    juce::OwnedArray<AudioSource> audioSources;
 
     //============Per-Channel Components==============
 

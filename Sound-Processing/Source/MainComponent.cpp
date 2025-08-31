@@ -258,6 +258,9 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 	auto maxInChnnls = activeInChnnls.getHighestBit() + 1;
 	auto maxOutChnnls = activeOutChnnls.getHighestBit() + 1;
 
+	// Pull from the Mixer
+	//mixer.getNextAudioBlock(bufferToFill);
+
 	// Input Channels
 	for (auto channel = 0; channel < maxInChnnls; ++channel)
 	{
