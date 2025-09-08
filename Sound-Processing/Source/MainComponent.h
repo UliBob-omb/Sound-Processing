@@ -77,6 +77,8 @@ private:
 
     //============Per-Channel Components==============
 
+    juce::OwnedArray<InputAudioSource> inputSources;
+
     int createdInputs = 0;
     
     juce::OwnedArray<LevelMeter> inLevelMeters;
