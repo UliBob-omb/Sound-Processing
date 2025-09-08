@@ -77,44 +77,43 @@ private:
 
     //============Per-Channel Components==============
 
-    int createdChannels = 0;
+    int createdInputs = 0;
     
     juce::OwnedArray<LevelMeter> inLevelMeters;
-    std::vector<float> inputLevelsLinear;
+    //std::vector<float> inputLevelsLinear;
 
-    juce::OwnedArray<juce::Slider> channelFaders;
-    std::vector<double> channelGains;
+    juce::OwnedArray<juce::Slider> inputFaders;
+    //std::vector<double> channelGains;
 
     juce::OwnedArray<juce::TextButton> EQToggleButtons;
-    std::vector<bool> enabledChannelEQs;
+    //std::vector<bool> enabledChannelEQs;
 
     juce::OwnedArray<juce::TextButton> MuteButtons;
-    std::vector<bool> mutedChannels;
+    //std::vector<bool> mutedChannels;
 
     juce::OwnedArray<juce::TextButton> ListenButtons;
     int soloChannel = -1;
 
-    //juce::dsp::IIR::Filter<float> newFilter;
     juce::OwnedArray<juce::Label> HFLabels;
-    juce::OwnedArray<juce::IIRFilter> HF_IIR_Filters;
+    //juce::OwnedArray<juce::IIRFilter> HF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HFBoosts;
     juce::OwnedArray<juce::Slider> HFQLevels;
     juce::OwnedArray<juce::Slider> HFCenterFreq;
 
     juce::OwnedArray<juce::Label> LFLabels;
-    juce::OwnedArray<juce::IIRFilter> LF_IIR_Filters;
+    //juce::OwnedArray<juce::IIRFilter> LF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LFBoosts;
     juce::OwnedArray<juce::Slider> LFQLevels;
     juce::OwnedArray<juce::Slider> LFCenterFreq;
 
     juce::OwnedArray<juce::Label> HMFLabels;
-    juce::OwnedArray<juce::IIRFilter> HMF_IIR_Filters;
+    //juce::OwnedArray<juce::IIRFilter> HMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> HMFBoosts;
     juce::OwnedArray<juce::Slider> HMFQLevels;
     juce::OwnedArray<juce::Slider> HMFCenterFreq;
 
     juce::OwnedArray<juce::Label> LMFLabels;
-    juce::OwnedArray<juce::IIRFilter> LMF_IIR_Filters;
+    //juce::OwnedArray<juce::IIRFilter> LMF_IIR_Filters;
     juce::OwnedArray<juce::Slider> LMFBoosts;
     juce::OwnedArray<juce::Slider> LMFQLevels;
     juce::OwnedArray<juce::Slider> LMFCenterFreq;
